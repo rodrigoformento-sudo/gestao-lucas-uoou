@@ -63,8 +63,25 @@
   table{width:100%;border-collapse:collapse;font-size:13.5px;}
   th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);}
   th{color:var(--text-dim);font-weight:600;font-size:12px;}
-  td.editable{color:var(--text-dim);font-style:italic;}
-  tr.example td{color:#6f7077;}
+  tr.example td{color:#6f7077;font-style:italic;}
+
+  .editable-field{
+    border-bottom:1px dashed #4a4b52;
+    cursor:text;
+    outline:none;
+    border-radius:3px;
+    padding:1px 4px;
+    transition:background .15s ease, border-color .15s ease;
+  }
+  .editable-field:hover{background:#26272c;}
+  .editable-field:focus{background:#2a2b31;border-color:var(--violet);}
+  .kpi .num.editable-field{display:inline-block;}
+
+  .clear-btn{
+    margin-top:14px;background:transparent;border:1px solid var(--line);color:var(--text-dim);
+    padding:7px 14px;border-radius:6px;font-size:12.5px;cursor:pointer;font-family:inherit;
+  }
+  .clear-btn:hover{color:var(--red);border-color:#4a2b30;}
 
   .chart-box{position:relative;height:280px;}
   .chart-box.tall{height:340px;}
@@ -117,14 +134,14 @@
   <section class="tabpanel active" id="resultados">
 
     <h2 class="section-title">Painel de resultados do time sob gestão do Lucas</h2>
-    <p class="section-sub">Estrutura de acompanhamento semanal. Os números abaixo são exemplo, o painel é o modelo: você atualiza os valores e o gráfico a cada agenda.</p>
+    <p class="section-sub">Clique em qualquer número com contorno tracejado pra editar. Ele salva sozinho neste navegador assim que você clicar fora do campo.</p>
 
     <div class="grid-kpi grid-kpi-5">
-      <div class="kpi"><div class="num">14</div><div class="label">Tamanho do funil</div><div class="tag">exemplo</div></div>
-      <div class="kpi"><div class="num">9</div><div class="label">Quantidade de agendas</div><div class="tag">exemplo</div></div>
-      <div class="kpi"><div class="num">2</div><div class="label">Quantidade de vendas</div><div class="tag">exemplo</div></div>
-      <div class="kpi"><div class="num">5</div><div class="label">Clientes em forecast</div><div class="tag">exemplo</div></div>
-      <div class="kpi"><div class="num">6 / 8</div><div class="label">1:1 feitas</div><div class="tag">exemplo</div></div>
+      <div class="kpi"><div class="num editable-field" contenteditable="true" data-key="kpi_funil">14</div><div class="label">Tamanho do funil</div></div>
+      <div class="kpi"><div class="num editable-field" contenteditable="true" data-key="kpi_agendas">9</div><div class="label">Quantidade de agendas</div></div>
+      <div class="kpi"><div class="num editable-field" contenteditable="true" data-key="kpi_vendas">2</div><div class="label">Quantidade de vendas</div></div>
+      <div class="kpi"><div class="num editable-field" contenteditable="true" data-key="kpi_forecast">5</div><div class="label">Clientes em forecast</div></div>
+      <div class="kpi"><div class="num editable-field" contenteditable="true" data-key="kpi_11">6 / 8</div><div class="label">1:1 feitas</div></div>
     </div>
 
     <div class="two-col">
@@ -146,16 +163,35 @@
         </thead>
         <tbody>
           <tr class="example">
-            <td>02/09 a 06/09</td><td>14</td><td>9</td><td>2</td><td>5</td><td>6/8</td>
+            <td>02/09 a 06/09 (exemplo)</td><td>14</td><td>9</td><td>2</td><td>5</td><td>6/8</td>
           </tr>
           <tr>
-            <td class="editable">—</td><td class="editable">—</td><td class="editable">—</td><td class="editable">—</td><td class="editable">—</td><td class="editable">—</td>
+            <td class="editable-field" contenteditable="true" data-key="log1_semana">clique pra preencher</td>
+            <td class="editable-field" contenteditable="true" data-key="log1_funil">—</td>
+            <td class="editable-field" contenteditable="true" data-key="log1_agendas">—</td>
+            <td class="editable-field" contenteditable="true" data-key="log1_vendas">—</td>
+            <td class="editable-field" contenteditable="true" data-key="log1_forecast">—</td>
+            <td class="editable-field" contenteditable="true" data-key="log1_11">—</td>
           </tr>
           <tr>
-            <td class="editable">—</td><td class="editable">—</td><td class="editable">—</td><td class="editable">—</td><td class="editable">—</td><td class="editable">—</td>
+            <td class="editable-field" contenteditable="true" data-key="log2_semana">clique pra preencher</td>
+            <td class="editable-field" contenteditable="true" data-key="log2_funil">—</td>
+            <td class="editable-field" contenteditable="true" data-key="log2_agendas">—</td>
+            <td class="editable-field" contenteditable="true" data-key="log2_vendas">—</td>
+            <td class="editable-field" contenteditable="true" data-key="log2_forecast">—</td>
+            <td class="editable-field" contenteditable="true" data-key="log2_11">—</td>
+          </tr>
+          <tr>
+            <td class="editable-field" contenteditable="true" data-key="log3_semana">clique pra preencher</td>
+            <td class="editable-field" contenteditable="true" data-key="log3_funil">—</td>
+            <td class="editable-field" contenteditable="true" data-key="log3_agendas">—</td>
+            <td class="editable-field" contenteditable="true" data-key="log3_vendas">—</td>
+            <td class="editable-field" contenteditable="true" data-key="log3_forecast">—</td>
+            <td class="editable-field" contenteditable="true" data-key="log3_11">—</td>
           </tr>
         </tbody>
       </table>
+      <button id="clearBtn" class="clear-btn">Limpar dados preenchidos</button>
     </div>
 
     <div class="card">
@@ -268,6 +304,40 @@
       document.getElementById(btn.dataset.tab).classList.add('active');
     });
   });
+
+  // Persistência local dos campos editáveis (salva neste navegador)
+  const STORAGE_KEY = 'gestao_lucas_uoou_dados';
+  function loadData(){
+    try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
+    catch(e){ return {}; }
+  }
+  function saveField(key, value){
+    const data = loadData();
+    data[key] = value;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+  const savedData = loadData();
+  document.querySelectorAll('[data-key]').forEach(el=>{
+    const key = el.dataset.key;
+    if(savedData[key] !== undefined && savedData[key] !== ''){
+      el.textContent = savedData[key];
+    }
+    el.addEventListener('blur', ()=>{
+      saveField(key, el.textContent.trim());
+    });
+    el.addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter'){ e.preventDefault(); el.blur(); }
+    });
+  });
+  const clearBtn = document.getElementById('clearBtn');
+  if(clearBtn){
+    clearBtn.addEventListener('click', ()=>{
+      if(confirm('Isso apaga todos os valores preenchidos neste navegador e volta pro padrão. Confirma?')){
+        localStorage.removeItem(STORAGE_KEY);
+        location.reload();
+      }
+    });
+  }
 
   new Chart(document.getElementById('funilChart'), {
     type:'bar',
