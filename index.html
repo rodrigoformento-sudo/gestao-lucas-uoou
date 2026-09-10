@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lucas — Trilha de Gestão | UOOU</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#1a1a1a;
+    --panel:#212226;
+    --panel-2:#26272c;
+    --line:#34353b;
+    --text:#ececec;
+    --text-dim:#9a9a9f;
+    --blue:#4d8dff;
+    --green:#3ecf8e;
+    --amber:#e2a83d;
+    --violet:#a688f2;
+    --red:#e2596b;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.5;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:40px 28px 100px;}
+
+  header.top{padding-bottom:28px;border-bottom:1px solid var(--line);margin-bottom:32px;}
+  header.top .kicker{color:var(--text-dim);font-size:13px;margin-bottom:6px;}
+  header.top h1{font-size:30px;margin:0 0 10px;font-weight:700;letter-spacing:-0.01em;}
+  header.top p{color:var(--text-dim);font-size:15px;max-width:640px;margin:0;}
+
+  nav.tabs{display:flex;gap:8px;margin-bottom:32px;position:sticky;top:0;background:var(--bg);padding:12px 0;z-index:10;border-bottom:1px solid var(--line);}
+  nav.tabs button{
+    background:transparent;border:1px solid var(--line);color:var(--text-dim);
+    padding:9px 18px;border-radius:7px;font-size:14px;cursor:pointer;font-family:inherit;
+    transition:all .15s ease;
+  }
+  nav.tabs button.active{background:var(--panel-2);color:var(--text);border-color:#454650;}
+  nav.tabs button:hover{color:var(--text);}
+
+  section.tabpanel{display:none;}
+  section.tabpanel.active{display:block;}
+
+  h2.section-title{font-size:20px;margin:0 0 4px;font-weight:700;}
+  p.section-sub{color:var(--text-dim);font-size:14px;margin:0 0 20px;}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:22px;margin-bottom:20px;}
+  .card h3{margin:0 0 14px;font-size:15px;font-weight:600;}
+
+  .grid-kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+  .kpi{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px;}
+  .kpi .num{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;}
+  .kpi .label{color:var(--text-dim);font-size:12.5px;margin-top:4px;}
+  .kpi .tag{display:inline-block;font-size:10.5px;color:var(--amber);border:1px solid #4a3a1f;background:#2a2115;padding:2px 7px;border-radius:5px;margin-top:8px;}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);}
+  th{color:var(--text-dim);font-weight:600;font-size:12px;}
+  td.editable{color:var(--text-dim);font-style:italic;}
+  tr.example td{color:#6f7077;}
+
+  .chart-box{position:relative;height:280px;}
+  .chart-box.tall{height:340px;}
+
+  .two-col{display:grid;grid-template-columns:1.3fr 1fr;gap:20px;}
+  @media(max-width:800px){.two-col{grid-template-columns:1fr;} .grid-kpi{grid-template-columns:repeat(2,1fr);}}
+
+  .phase{border-left:2px solid var(--violet);padding:4px 0 4px 20px;margin-bottom:22px;position:relative;}
+  .phase::before{content:"";position:absolute;left:-6px;top:6px;width:10px;height:10px;border-radius:50%;background:var(--violet);}
+  .phase .phase-weeks{color:var(--violet);font-size:12.5px;font-weight:600;margin-bottom:4px;}
+  .phase h4{margin:0 0 6px;font-size:16px;}
+  .phase p{color:var(--text-dim);font-size:14px;margin:0 0 10px;max-width:640px;}
+  .phase ul{margin:0;padding-left:18px;color:var(--text);font-size:13.5px;}
+  .phase li{margin-bottom:4px;}
+  .phase .callout{margin-top:10px;background:#241d2c;border:1px solid #3a2f47;border-radius:7px;padding:10px 12px;font-size:13px;color:#cdb9f5;}
+
+  .agenda-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media(max-width:800px){.agenda-grid{grid-template-columns:1fr;}}
+  .agenda-card h4{font-size:14.5px;margin:0 0 3px;}
+  .agenda-card .dur{color:var(--text-dim);font-size:12px;margin-bottom:12px;}
+  .agenda-item{display:flex;gap:10px;padding:8px 0;border-bottom:1px dashed var(--line);}
+  .agenda-item:last-child{border-bottom:none;}
+  .agenda-item .t{color:var(--violet);font-size:12px;font-variant-numeric:tabular-nums;flex-shrink:0;width:52px;}
+  .agenda-item .d strong{display:block;font-size:13.5px;}
+  .agenda-item .d span{color:var(--text-dim);font-size:12.5px;}
+
+  .badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:5px;margin-left:6px;}
+  .badge.blue{background:#132540;color:var(--blue);}
+  .badge.green{background:#0f2b21;color:var(--green);}
+  .badge.amber{background:#2a2115;color:var(--amber);}
+
+  footer{color:var(--text-dim);font-size:12px;margin-top:40px;text-align:center;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="kicker">UOOU Solutions · Gestão Comercial</div>
+    <h1>Lucas — Trilha de Gestão</h1>
+    <p>Modelo de acompanhamento e mentoria para a transição de Lucas de vendedor para gestor de vendas, estruturado em torno das duas agendas semanais de 2h dedicadas a esse desenvolvimento.</p>
+  </header>
+
+  <nav class="tabs">
+    <button class="active" data-tab="resultados">Acompanhamento de Resultados</button>
+    <button data-tab="mentoria">Trilha de Mentoria</button>
+  </nav>
+
+  <!-- ===================== TAB 1: RESULTADOS ===================== -->
+  <section class="tabpanel active" id="resultados">
+
+    <h2 class="section-title">Painel de resultados do time sob gestão do Lucas</h2>
+    <p class="section-sub">Estrutura de acompanhamento semanal. Os números abaixo são exemplo, o painel é o modelo: você atualiza os valores e o gráfico a cada agenda.</p>
+
+    <div class="grid-kpi">
+      <div class="kpi"><div class="num">6 / 8</div><div class="label">1:1s com o time realizados na semana</div><div class="tag">exemplo</div></div>
+      <div class="kpi"><div class="num">3</div><div class="label">Calls acompanhadas ao vivo (shadowing)</div><div class="tag">exemplo</div></div>
+      <div class="kpi"><div class="num">92%</div><div class="label">Forecast realizado x projetado</div><div class="tag">exemplo</div></div>
+      <div class="kpi"><div class="num">14</div><div class="label">Negócios ativos no funil do time</div><div class="tag">exemplo</div></div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <h3>Funil do time (A Montanha) — semana corrente</h3>
+        <div class="chart-box"><canvas id="funilChart"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>Indicadores por vendedor</h3>
+        <div class="chart-box"><canvas id="radarTime"></canvas></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Log semanal de gestão <span class="badge violet" style="background:#241d2c;color:var(--violet);">preencher a cada semana</span></h3>
+      <table>
+        <thead>
+          <tr><th>Semana</th><th>1:1s realizados</th><th>Calls acompanhadas</th><th>Negócios fechados</th><th>Forecast x realizado</th><th>Principal bloqueio do time</th></tr>
+        </thead>
+        <tbody>
+          <tr class="example">
+            <td>02/09 a 06/09</td><td>6/8</td><td>3</td><td>2</td><td>92%</td><td>Decisor não confirmado em 4 contas</td>
+          </tr>
+          <tr>
+            <td class="editable">—</td><td class="editable">—</td><td class="editable">—</td><td class="editable">—</td><td class="editable">—</td><td class="editable">—</td>
+          </tr>
+          <tr>
+            <td class="editable">—</td><td class="editable">—</td><td class="editable">—</td><td class="editable">—</td><td class="editable">—</td><td class="editable">—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>O que olhar em cada etapa</h3>
+      <table>
+        <thead><tr><th>Etapa (A Montanha)</th><th>O que Lucas deve garantir como gestor</th></tr></thead>
+        <tbody>
+          <tr><td>Agenda Diagnóstico</td><td>Volume de agendas batendo a meta proporcional de dias úteis</td></tr>
+          <tr><td>Call Diagnóstico</td><td>Decisor identificado e confirmado antes da proposta</td></tr>
+          <tr><td>Apresentação de Proposta</td><td>ROI/payback apresentado antes do preço</td></tr>
+          <tr><td>Apresentação Diretoria</td><td>Centro de custo e fluxo de aprovação interna mapeados</td></tr>
+          <tr><td>Alinhamento de Integração</td><td>Próximo passo com data marcada, nunca "cliente vai analisar"</td></tr>
+          <tr><td>Faturamento</td><td>Ciclo total da conta registrado para calibrar forecast futuro</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </section>
+
+  <!-- ===================== TAB 2: MENTORIA ===================== -->
+  <section class="tabpanel" id="mentoria">
+
+    <h2 class="section-title">Trilha de mentoria — as duas agendas semanais</h2>
+    <p class="section-sub">Programa de 12 semanas dividido em 3 fases, desenhado para as duas reuniões de 2h por semana com o Lucas.</p>
+
+    <div class="card">
+      <h3>Como usar as duas agendas</h3>
+      <div class="agenda-grid">
+        <div class="agenda-card">
+          <h4>Agenda 1 — Reunião de Resultados <span class="badge blue">semanal</span></h4>
+          <div class="dur">2h · foco no painel de resultados</div>
+          <div class="agenda-item"><div class="t">30 min</div><div class="d"><strong>Leitura do funil</strong><span>Revisar o painel de resultados junto, etapa por etapa</span></div></div>
+          <div class="agenda-item"><div class="t">45 min</div><div class="d"><strong>Case real da semana</strong><span>Analisar uma call gravada com o time, usando o Roteiro de 1 Call</span></div></div>
+          <div class="agenda-item"><div class="t">30 min</div><div class="d"><strong>Plano de ação</strong><span>Definir 1 a 2 ações objetivas para o time na semana seguinte</span></div></div>
+          <div class="agenda-item"><div class="t">15 min</div><div class="d"><strong>Forecast</strong><span>Atualizar previsão de fechamento das contas em aberto</span></div></div>
+        </div>
+        <div class="agenda-card">
+          <h4>Agenda 2 — Desenvolvimento do Gestor <span class="badge violet" style="background:#241d2c;color:var(--violet);">semanal</span></h4>
+          <div class="dur">2h · foco na formação do Lucas como gestor</div>
+          <div class="agenda-item"><div class="t">20 min</div><div class="d"><strong>Check-in</strong><span>Como Lucas está se sentindo na cadeira de gestor, o que travou</span></div></div>
+          <div class="agenda-item"><div class="t">50 min</div><div class="d"><strong>Tema da fase</strong><span>Conteúdo da fase do mês (ver roteiro abaixo)</span></div></div>
+          <div class="agenda-item"><div class="t">40 min</div><div class="d"><strong>Roleplay</strong><span>Simular um 1:1 ou uma conversa difícil com um vendedor do time</span></div></div>
+          <div class="agenda-item"><div class="t">10 min</div><div class="d"><strong>Combinado</strong><span>O que Lucas vai aplicar com o time antes do próximo encontro</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Roteiro em 3 fases</h3>
+
+      <div class="phase">
+        <div class="phase-weeks">SEMANAS 1 A 4</div>
+        <h4>Fase 1 — Fundamentos da gestão</h4>
+        <p>Lucas sai do papel de "melhor vendedor" e assume os rituais que sustentam um time: cadência, leitura de indicadores e uso do funil como ferramenta de gestão, não só de execução.</p>
+        <ul>
+          <li>Implantar a rotina de 1:1 semanal com cada vendedor do time</li>
+          <li>Usar o painel de resultados desta trilha como ritual fixo de leitura semanal</li>
+          <li>Diferenciar "acompanhar número" de "entender a causa do número"</li>
+          <li>Primeiras sessões de shadowing em calls do time</li>
+        </ul>
+      </div>
+
+      <div class="phase">
+        <div class="phase-weeks">SEMANAS 5 A 8</div>
+        <h4>Fase 2 — Coaching de vendas</h4>
+        <p>Aqui Lucas passa a treinar o time nos mesmos pontos que ele mesmo precisou desenvolver como vendedor: essa é a virada de "ter o gap" para "ensinar a evitar o gap".</p>
+        <ul>
+          <li>Como cobrar identificação de decisor antes da proposta</li>
+          <li>Como treinar o time a apresentar ROI/payback antes do preço</li>
+          <li>Como conduzir feedback de call sem virar microgestão</li>
+          <li>Como puxar a pergunta de fechamento direto numa reunião de proposta</li>
+        </ul>
+        <div class="callout">Ponto de atenção: nos diagnósticos anteriores, esses foram justamente os gaps mais recorrentes do Lucas como vendedor. A mentoria aqui trabalha a transferência desse aprendizado para o time, não repete o diagnóstico.</div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-weeks">SEMANAS 9 A 12</div>
+        <h4>Fase 3 — Autonomia de gestão</h4>
+        <p>Lucas passa a conduzir os rituais sozinho, com você em posição de revisão, não de condução.</p>
+        <ul>
+          <li>Gestão de performance individual: quando intervir, quando dar espaço</li>
+          <li>Conversas difíceis: baixa performance, ajuste de meta, alinhamento de expectativa</li>
+          <li>Participação em recrutamento e onboarding de um novo vendedor, se houver</li>
+          <li>Reavaliação do scorecard de competências (abaixo) para medir evolução</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Scorecard de competências do gestor</h3>
+      <p class="section-sub" style="margin-bottom:14px;">Preencher no início (semana 1) e reavaliar ao fim da fase 3 (semana 12), de 0 a 10 por eixo.</p>
+      <div class="chart-box tall"><canvas id="radarGestor"></canvas></div>
+    </div>
+
+  </section>
+
+  <footer>Lucas — Trilha de Gestão · UOOU Solutions</footer>
+</div>
+
+<script>
+  Chart.defaults.color = '#9a9a9f';
+  Chart.defaults.borderColor = '#34353b';
+  Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+
+  document.querySelectorAll('nav.tabs button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('section.tabpanel').forEach(s=>s.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  new Chart(document.getElementById('funilChart'), {
+    type:'bar',
+    data:{
+      labels:['Agenda\nDiagnóstico','Call\nDiagnóstico','Proposta','Diretoria','Integração','Faturamento'],
+      datasets:[{
+        label:'Negócios',
+        data:[14,10,7,5,3,2],
+        backgroundColor:['#4d8dff','#4d8dff','#e2a83d','#e2a83d','#3ecf8e','#3ecf8e'],
+        borderRadius:4,
+        maxBarThickness:46
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{grid:{display:false},ticks:{font:{size:11}}},
+        y:{grid:{color:'#2a2b30'},beginAtZero:true}
+      }
+    }
+  });
+
+  new Chart(document.getElementById('radarTime'), {
+    type:'radar',
+    data:{
+      labels:['Decisor\nconfirmado','ROI antes\ndo preço','Fechamento\ndireto','Cadência de\nfollow-up','Mapeamento\nconcorrência'],
+      datasets:[
+        {label:'Lucas (equipe)',data:[6,5,4,7,5],borderColor:'#4d8dff',backgroundColor:'rgba(77,141,255,.15)',pointBackgroundColor:'#4d8dff'},
+        {label:'Sabrina',data:[7,6,6,8,6],borderColor:'#3ecf8e',backgroundColor:'rgba(62,207,142,.12)',pointBackgroundColor:'#3ecf8e'}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:11}}}},
+      scales:{r:{min:0,max:10,ticks:{display:false},grid:{color:'#2a2b30'},angleLines:{color:'#2a2b30'},pointLabels:{font:{size:10.5}}}}
+    }
+  });
+
+  new Chart(document.getElementById('radarGestor'), {
+    type:'radar',
+    data:{
+      labels:['Gestão de\nfunil','Coaching\nde time','Rituais e\ncadência','Comunicação\ncom liderança','Autonomia\nde decisão'],
+      datasets:[
+        {label:'Semana 1 (baseline)',data:[5,3,4,6,3],borderColor:'#e2a83d',backgroundColor:'rgba(226,168,61,.10)',pointBackgroundColor:'#e2a83d',borderDash:[4,4]},
+        {label:'Meta semana 12',data:[8,8,8,8,7],borderColor:'#a688f2',backgroundColor:'rgba(166,136,242,.15)',pointBackgroundColor:'#a688f2'}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:11}}}},
+      scales:{r:{min:0,max:10,ticks:{stepSize:2,backdropColor:'transparent'},grid:{color:'#2a2b30'},angleLines:{color:'#2a2b30'},pointLabels:{font:{size:10.5}}}}
+    }
+  });
+</script>
+</body>
+</html>
