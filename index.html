@@ -179,12 +179,12 @@
 
     <div class="two-col">
       <div class="card">
-        <h3>Funil do time (A Montanha) — referência</h3>
-        <div class="chart-box"><canvas id="funilChart"></canvas></div>
+        <h3>Agendas x vendas por semana</h3>
+        <div class="chart-box"><canvas id="weeklyBarChart"></canvas></div>
       </div>
       <div class="card">
-        <h3>Indicadores por vendedor</h3>
-        <div class="chart-box"><canvas id="radarTime"></canvas></div>
+        <h3>Funil e forecast por semana</h3>
+        <div class="chart-box"><canvas id="funnelLineChart"></canvas></div>
       </div>
     </div>
 
@@ -280,8 +280,8 @@
           <h4>Agenda 2 — Desenvolvimento do Gestor <span class="badge violet" style="background:#241d2c;color:var(--violet);">semanal</span></h4>
           <div class="dur">2h · foco na formação do Lucas como gestor</div>
           <div class="agenda-item"><div class="t">20 min</div><div class="d"><strong>Check-in</strong><span>Como Lucas está se sentindo na cadeira de gestor, o que travou</span></div></div>
-          <div class="agenda-item"><div class="t">50 min</div><div class="d"><strong>Tema da fase</strong><span>Conteúdo da fase do mês (ver roteiro abaixo)</span></div></div>
-          <div class="agenda-item"><div class="t">40 min</div><div class="d"><strong>Roleplay</strong><span>Simular um 1:1 ou uma conversa difícil com um vendedor do time</span></div></div>
+          <div class="agenda-item"><div class="t">50 min</div><div class="d"><strong>Estudo de caso real do time</strong><span>Pegar uma situação real da semana (negócio perdido, objeção mal tratada, 1:1 que travou) e dissecar junto o que aconteceu e o que fazer diferente</span></div></div>
+          <div class="agenda-item"><div class="t">40 min</div><div class="d"><strong>Preparação da próxima conversa difícil</strong><span>Lucas traz uma conversa real que precisa ter naquela semana (feedback duro, ajuste de meta) e vocês preparam juntos o que ele vai falar</span></div></div>
           <div class="agenda-item"><div class="t">10 min</div><div class="d"><strong>Combinado</strong><span>O que Lucas vai aplicar com o time antes do próximo encontro</span></div></div>
         </div>
       </div>
@@ -436,9 +436,60 @@
     document.getElementById('kpi11').textContent = hasUm ? (umFeitosTotal+' / '+umPlanejadosTotal) : '—';
   }
 
+  // ====== Gráficos ligados aos dados digitados ======
+  const weeklyBarChart = new Chart(document.getElementById('weeklyBarChart'), {
+    type:'bar',
+    data:{
+      labels:['Semana 1','Semana 2','Semana 3','Semana 4'],
+      datasets:[
+        {label:'Agendas', data:[0,0,0,0], backgroundColor:'#4d8dff', borderRadius:4, maxBarThickness:40},
+        {label:'Vendas', data:[0,0,0,0], backgroundColor:'#3ecf8e', borderRadius:4, maxBarThickness:40}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:11}}}},
+      scales:{
+        x:{grid:{display:false},ticks:{font:{size:11}}},
+        y:{grid:{color:'#2a2b30'},beginAtZero:true,ticks:{precision:0}}
+      }
+    }
+  });
+
+  const funnelLineChart = new Chart(document.getElementById('funnelLineChart'), {
+    type:'line',
+    data:{
+      labels:['Semana 1','Semana 2','Semana 3','Semana 4'],
+      datasets:[
+        {label:'Tamanho do funil', data:[null,null,null,null], borderColor:'#4d8dff', backgroundColor:'rgba(77,141,255,.12)', tension:.3, spanGaps:true},
+        {label:'Clientes em forecast', data:[null,null,null,null], borderColor:'#e2a83d', backgroundColor:'rgba(226,168,61,.12)', tension:.3, spanGaps:true}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:11}}}},
+      scales:{
+        x:{grid:{display:false},ticks:{font:{size:11}}},
+        y:{grid:{color:'#2a2b30'},beginAtZero:true,ticks:{precision:0}}
+      }
+    }
+  });
+
+  function updateCharts(){
+    const data = getMonthData(currentMonthKey());
+    const weeks = [1,2,3,4].map(w=> data[w] || emptyWeek());
+    weeklyBarChart.data.datasets[0].data = weeks.map(w=> w.agendas==='' || w.agendas===undefined ? 0 : Number(w.agendas));
+    weeklyBarChart.data.datasets[1].data = weeks.map(w=> w.vendas==='' || w.vendas===undefined ? 0 : Number(w.vendas));
+    weeklyBarChart.update();
+    funnelLineChart.data.datasets[0].data = weeks.map(w=> w.funil==='' || w.funil===undefined ? null : Number(w.funil));
+    funnelLineChart.data.datasets[1].data = weeks.map(w=> w.forecast==='' || w.forecast===undefined ? null : Number(w.forecast));
+    funnelLineChart.update();
+  }
+
   function loadMonth(key){
     setInputsFromData(getMonthData(key));
     recomputeKPIs();
+    updateCharts();
   }
 
   let saveTimeout;
@@ -465,6 +516,7 @@
     saveAllMonths(all);
     localStorage.setItem(LAST_MONTH_KEY, key);
     recomputeKPIs();
+    updateCharts();
     flashSaved();
   });
 
@@ -490,44 +542,6 @@
       }
     });
   }
-
-  new Chart(document.getElementById('funilChart'), {
-    type:'bar',
-    data:{
-      labels:['Agenda\nDiagnóstico','Call\nDiagnóstico','Proposta','Diretoria','Integração','Faturamento'],
-      datasets:[{
-        label:'Negócios',
-        data:[14,10,7,5,3,2],
-        backgroundColor:['#4d8dff','#4d8dff','#e2a83d','#e2a83d','#3ecf8e','#3ecf8e'],
-        borderRadius:4,
-        maxBarThickness:46
-      }]
-    },
-    options:{
-      responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false}},
-      scales:{
-        x:{grid:{display:false},ticks:{font:{size:11}}},
-        y:{grid:{color:'#2a2b30'},beginAtZero:true}
-      }
-    }
-  });
-
-  new Chart(document.getElementById('radarTime'), {
-    type:'radar',
-    data:{
-      labels:['Decisor\nconfirmado','ROI antes\ndo preço','Fechamento\ndireto','Cadência de\nfollow-up','Mapeamento\nconcorrência'],
-      datasets:[
-        {label:'Lucas (equipe)',data:[6,5,4,7,5],borderColor:'#4d8dff',backgroundColor:'rgba(77,141,255,.15)',pointBackgroundColor:'#4d8dff'},
-        {label:'Sabrina',data:[7,6,6,8,6],borderColor:'#3ecf8e',backgroundColor:'rgba(62,207,142,.12)',pointBackgroundColor:'#3ecf8e'}
-      ]
-    },
-    options:{
-      responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:11}}}},
-      scales:{r:{min:0,max:10,ticks:{display:false},grid:{color:'#2a2b30'},angleLines:{color:'#2a2b30'},pointLabels:{font:{size:10.5}}}}
-    }
-  });
 
   new Chart(document.getElementById('radarGestor'), {
     type:'radar',
